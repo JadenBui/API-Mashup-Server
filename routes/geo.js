@@ -10,9 +10,16 @@ router.get("/address/:address", async (req, res, next) => {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.API_KEY}`
     );
+    if (response.data.status !== "OK") {
+      return res.status(400).json({
+        error: false,
+        data: {},
+        message: "There is no data for the requested address",
+      });
+    }
     res.status(200).json({ error: false, data: response.data });
   } catch (error) {
-    res.status(404).json({ error: true, message: error });
+    res.status(404).json({ error: true, message: error.message });
   }
 });
 
@@ -46,7 +53,7 @@ router.get("/latlng", async (req, res, next) => {
       data: { country, province, locality },
     });
   } catch (error) {
-    res.status(404).json({ error: true, message: error });
+    res.status(404).json({ error: true, message: error.message });
   }
 });
 

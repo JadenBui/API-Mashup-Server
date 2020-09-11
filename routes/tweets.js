@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
     `https://api.twitter.com/1.1/search/tweets.json?q=covid&lang=en&geocode=${lat},${lng},2km`,
     (error, tweets, response) => {
       if (error) {
-        return res.status(400).json({ error: true, message: error });
+        return res.status(400).json({ error: true, message: error.message });
       }
       const formattedResponse = tweets.statuses.map((tweet) => {
         return {
@@ -28,6 +28,13 @@ router.get("/", async (req, res) => {
           user_image_url: tweet.user.profile_image_url_https,
         };
       });
+      if (formattedResponse.length === 0) {
+        return res.status(400).json({
+          error: false,
+          data: [],
+          message: "There is no data for the requested location",
+        });
+      }
       res.status(200).json({ error: false, data: formattedResponse });
     }
   );

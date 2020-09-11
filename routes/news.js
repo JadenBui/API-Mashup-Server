@@ -23,6 +23,13 @@ router.get("/:query", async (req, res) => {
       const formattedDate = date.toDateString();
       return { ...article, publishedAt: formattedDate };
     });
+    if (data.length === 0) {
+      return res.status(400).json({
+        error: false,
+        data: [],
+        message: "There is no data for the requested article",
+      });
+    }
     res.status(200).json({
       error: false,
       data,

@@ -15,14 +15,18 @@ router.get("/:countryName/:province", async (req, res, next) => {
     );
     const statisticArray = response.data;
     const result =
-      statisticArray[0].Province !== "" && province !== "general"
+      statisticArray[0].Province !== ""
         ? response.data.filter((stat) =>
             province.toLowerCase().includes(stat.Province.toLowerCase())
           )
         : statisticArray;
 
     if (result.length === 0) {
-      return res.status(200).json({ error: false, data: {} });
+      return res.status(400).json({
+        error: false,
+        data: {},
+        message: "There is no data for the requested location",
+      });
     }
     const { Confirmed, Deaths, Recovered, Active } = result.slice(
       result.length - 1
@@ -32,7 +36,7 @@ router.get("/:countryName/:province", async (req, res, next) => {
       .status(200)
       .json({ error: false, data: { Confirmed, Deaths, Recovered, Active } });
   } catch (error) {
-    res.status(404).json({ error: true, message: error });
+    res.status(404).json({ error: true, message: error.message });
   }
 });
 
