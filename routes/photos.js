@@ -2,10 +2,13 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const random = require("seedrandom");
+const geoCodeCheck = require("./helpers/geoCodeCheck");
+const stringNormalizer = require("./helpers/stringNormalizer");
+const returnArrayOfUniqueObjects = require("./helpers/returnArrayOfUniqueObjects");
+
 require("dotenv").config();
 
 const paddingCordinates = (coordinate, defaultCoordinate) => {
-  if (!coordinate.latitude && !defaultCoordinate.lat) return;
   let { latitude, longitude } = coordinate.latitude
     ? coordinate
     : defaultCoordinate;
@@ -21,21 +24,33 @@ const paddingCordinates = (coordinate, defaultCoordinate) => {
   return { latitude, longitude };
 };
 
-router.get("/:city", async (req, res, next) => {
+router.get("/:country/:city", async (req, res, next) => {
   const { keyword, lat, lng } = req.query;
-  const { city } = req.params;
+  const { city, country } = req.params;
+  if (!geoCodeCheck(lat, lng))
+    return res.status(400).json({
+      error: false,
+      message: "latitude & longitude can only be number",
+    });
   const formattedCity = encodeURI(
     keyword
       ? city.replace("City", "").toLowerCase() + " " + keyword
       : city.replace("City", "").toLowerCase()
   );
+  const formattedCountry = encodeURI(stringNormalizer(country));
   try {
-    const response = await axios.get(
+    const cityResponse = await axios.get(
       `https://api.unsplash.com/search/photos?query=${formattedCity}&per_page=200&client_id=${process.env.API_KEY_SPLASH}`
     );
-    const dataArray = response.data.results;
+    let dataArray = cityResponse.data.results;
     if (dataArray.length === 0) {
-      return res.status(400).json({
+      const countryResponse = await axios.get(
+        `https://api.unsplash.com/search/photos?query=${formattedCountry}&per_page=200&client_id=${process.env.API_KEY_SPLASH}`
+      );
+      dataArray = countryResponse.data.results;
+    }
+    if (dataArray.length === 0) {
+      return res.status(404).json({
         error: false,
         data: [],
         message: "There is no data for the requested location",
@@ -74,16 +89,37 @@ router.get("/:city", async (req, res, next) => {
         `https://api.unsplash.com/photos/${photo.id}/?client_id=${process.env.API_KEY_SPLASH}`
       );
     });
-    const coordinatesArray = await Promise.all(promiseArray);
-    const data = coordinatesArray.map((coordinate, index) => {
-      return {
-        ...resultPhotos[index],
-        ...paddingCordinates(coordinate.data.location.position, {
-          latitude: lat,
-          longitude: lng,
-        }),
-      };
+    const resultArray = await Promise.all(promiseArray);
+    const coordinatesArray = resultArray.map((item) => {
+      return { ...item.data.location.position };
     });
+    console.log(coordinatesArray);
+    let data;
+    const [uniqueCoordinateArray, hasNullValue] = returnArrayOfUniqueObjects(
+      coordinatesArray
+    );
+    if (
+      uniqueCoordinateArray.length !== coordinatesArray.length ||
+      hasNullValue
+    ) {
+      data = coordinatesArray.map((coordinate, index) => {
+        return {
+          ...resultPhotos[index],
+          ...paddingCordinates(coordinate, {
+            latitude: lat,
+            longitude: lng,
+          }),
+        };
+      });
+    } else {
+      data = coordinatesArray.map((coordinate, index) => {
+        return {
+          ...resultPhotos[index],
+          ...coordinate,
+        };
+      });
+    }
+
     res.status(200).json({
       error: false,
       data,

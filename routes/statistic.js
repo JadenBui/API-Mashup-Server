@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-
+const stringNormalizer = require("./helpers/stringNormalizer");
 /* GET home page. */
 router.get("/:countryName/:province", async (req, res, next) => {
   const { countryName, province } = req.params;
@@ -11,7 +11,9 @@ router.get("/:countryName/:province", async (req, res, next) => {
   to.setDate(new Date().getDate() - 1);
   try {
     const response = await axios.get(
-      `https://api.covid19api.com/country/${countryName}?from=${from.toISOString()}&to=${to.toISOString()}`
+      `https://api.covid19api.com/country/${stringNormalizer(
+        countryName
+      )}?from=${from.toISOString()}&to=${to.toISOString()}`
     );
     const statisticArray = response.data;
     const result =
@@ -22,7 +24,7 @@ router.get("/:countryName/:province", async (req, res, next) => {
         : statisticArray;
 
     if (result.length === 0) {
-      return res.status(400).json({
+      return res.status(404).json({
         error: false,
         data: {},
         message: "There is no data for the requested location",
