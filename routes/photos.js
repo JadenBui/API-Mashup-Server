@@ -1,28 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const random = require("seedrandom");
 const geoCodeCheck = require("./helpers/geoCodeCheck");
 const stringNormalizer = require("./helpers/stringNormalizer");
 const returnArrayOfUniqueObjects = require("./helpers/returnArrayOfUniqueObjects");
+const coordinatePadding = require("./helpers/coordinatePadding");
 
 require("dotenv").config();
-
-const paddingCordinates = (coordinate, defaultCoordinate) => {
-  let { latitude, longitude } = coordinate.latitude
-    ? coordinate
-    : defaultCoordinate;
-  const rngLat = random();
-  const rngLng = random();
-
-  latitude =
-    latitude.toString().slice(0, latitude.toString().length - 5) +
-    `${Math.floor(rngLat() * 2000)}`;
-  longitude =
-    longitude.toString().slice(0, longitude.toString().length - 5) +
-    `${Math.floor(rngLng() * 2000)}`;
-  return { latitude, longitude };
-};
 
 router.get("/:country/:city", async (req, res, next) => {
   const { keyword, lat, lng } = req.query;
@@ -93,7 +77,6 @@ router.get("/:country/:city", async (req, res, next) => {
     const coordinatesArray = resultArray.map((item) => {
       return { ...item.data.location.position };
     });
-    console.log(coordinatesArray);
     let data;
     const [uniqueCoordinateArray, hasNullValue] = returnArrayOfUniqueObjects(
       coordinatesArray
@@ -105,7 +88,7 @@ router.get("/:country/:city", async (req, res, next) => {
       data = coordinatesArray.map((coordinate, index) => {
         return {
           ...resultPhotos[index],
-          ...paddingCordinates(coordinate, {
+          ...coordinatePadding(coordinate, {
             latitude: lat,
             longitude: lng,
           }),

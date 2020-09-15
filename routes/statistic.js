@@ -12,7 +12,8 @@ router.get("/:countryName/:province", async (req, res, next) => {
   try {
     const response = await axios.get(
       `https://api.covid19api.com/country/${stringNormalizer(
-        countryName
+        countryName,
+        true
       )}?from=${from.toISOString()}&to=${to.toISOString()}`
     );
     const statisticArray = response.data;
@@ -30,9 +31,7 @@ router.get("/:countryName/:province", async (req, res, next) => {
         message: "There is no data for the requested location",
       });
     }
-    const { Confirmed, Deaths, Recovered, Active } = result.slice(
-      result.length - 1
-    )[0];
+    const { Confirmed, Deaths, Recovered, Active } = result.slice(-1)[0];
 
     res
       .status(200)

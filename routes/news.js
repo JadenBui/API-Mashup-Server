@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const stringNormalizer = require("./helpers/stringNormalizer");
+const newsFilter = require("./helpers/newsFilter");
+
 require("dotenv").config();
 
 router.get("/:country/:province", async (req, res) => {
@@ -11,15 +13,15 @@ router.get("/:country/:province", async (req, res) => {
     currentDate.setDate(currentDate.getDate() - 1);
     const from = currentDate.toLocaleDateString().replace(/\//g, "-");
     const { country, province } = req.params;
-    const formattedProvince = encodeURI(stringNormalizer(province));
-    const formattedCountry = encodeURI(stringNormalizer(country));
+    const formattedProvince = encodeURI(stringNormalizer(province, true));
+    const formattedCountry = encodeURI(stringNormalizer(country, true));
     const provinceResponse = await axios({
       method: "get",
       header: "X-No-Cache=true",
       url: `https://newsapi.org/v2/everything?q=${formattedProvince}&from=${from}&to=${to}&pageSize=40&language=en&apiKey=${process.env.API_KEY_NEWS}`,
     });
     let articleArray = provinceResponse.data.articles;
-    if (articleArray.length === 0) {
+    if (articleArray.length < 5) {
       const countryResponse = await axios({
         method: "get",
         header: "X-No-Cache=true",
@@ -34,7 +36,8 @@ router.get("/:country/:province", async (req, res) => {
         message: "There is no data for the requested article",
       });
     }
-    const data = articleArray.map((article) => {
+    const filteredArticleArray = newsFilter(articleArray, "description");
+    const data = filteredArticleArray.map((article) => {
       const date = new Date(article.publishedAt);
       const formattedDate = date.toDateString();
       return { ...article, publishedAt: formattedDate };
