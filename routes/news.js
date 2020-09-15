@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const stringNormalizer = require("./helpers/stringNormalizer");
-const newsFilter = require("./helpers/newsFilter");
+const stringNormalizer = require("../helpers/stringNormalizer");
+const newsFilter = require("../helpers/newsFilter");
 
 require("dotenv").config();
 
@@ -47,7 +47,6 @@ router.get("/:country/:province", async (req, res) => {
       data,
     });
   } catch (error) {
-    console.log(error);
     res.status(400).json({ error: true, message: error });
   }
 });

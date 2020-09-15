@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const geoCodeCheck = require("./helpers/geoCodeCheck");
-const stringNormalizer = require("./helpers/stringNormalizer");
-const returnArrayOfUniqueObjects = require("./helpers/returnArrayOfUniqueObjects");
-const coordinatePadding = require("./helpers/coordinatePadding");
+const geoCodeCheck = require("../helpers/geoCodeCheck");
+const stringNormalizer = require("../helpers/stringNormalizer");
+const returnArrayOfUniqueObjects = require("../helpers/returnArrayOfUniqueObjects");
+const coordinatePadding = require("../helpers/coordinatePadding");
 
 require("dotenv").config();
 

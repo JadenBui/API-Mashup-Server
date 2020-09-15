@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const geoCodeCheck = require("./helpers/geoCodeCheck");
+const geoCodeCheck = require("../helpers/geoCodeCheck");
 require("dotenv").config();
 
 router.get("/address/:address", async (req, res, next) => {

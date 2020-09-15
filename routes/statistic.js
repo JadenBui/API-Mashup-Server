@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const stringNormalizer = require("./helpers/stringNormalizer");
+const stringNormalizer = require("../helpers/stringNormalizer");
 /* GET home page. */
 router.get("/:countryName/:province", async (req, res, next) => {
   const { countryName, province } = req.params;
