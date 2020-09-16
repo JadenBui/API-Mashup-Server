@@ -31,6 +31,7 @@ app.use("/geo", geoRouter);
 app.use("/photos", photosRouter);
 app.use("/news", newsRouter);
 app.use("/tweets", tweetsRoute);
+app.use(express.static("../client/build"));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
