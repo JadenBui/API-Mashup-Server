@@ -107,7 +107,7 @@ router.get("/:country/:city", async (req, res, next) => {
       error: false,
       data,
     });
-  } catch (err) {
+  } catch (error) {
     const statusCode = error.response.status;
     if (statusCode === 403)
       return res.status(statusCode).json({
