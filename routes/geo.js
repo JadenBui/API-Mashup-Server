@@ -2,13 +2,17 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const geoCodeCheck = require("../helpers/geoCodeCheck");
+const stringNormalizer = require("../helpers/stringNormalizer");
 require("dotenv").config();
 
 router.get("/address/:address", async (req, res, next) => {
   const { address } = req.params;
   try {
     const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${stringNormalizer(
+        address,
+        true
+      )}&key=${process.env.API_KEY}`
     );
     if (response.data.status !== "OK") {
       return res.status(400).json({
