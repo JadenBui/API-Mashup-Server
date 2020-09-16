@@ -19,7 +19,13 @@ router.get("/", async (req, res) => {
     `https://api.twitter.com/1.1/search/tweets.json?q=covid&lang=en&geocode=${lat},${lng},20km`,
     (error, tweets, response) => {
       if (error) {
-        return res.status(400).json({ error: true, message: error.message });
+        const statusCode = error.response.status;
+        if (statusCode === 403)
+          return res.status(statusCode).json({
+            error: true,
+            message: "You have reached the limit of requests",
+          });
+        res.status(statusCode).json({ error: true, message: error.message });
       }
       const formattedResponse = tweets.statuses.map((tweet) => {
         return {

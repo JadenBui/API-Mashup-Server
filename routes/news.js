@@ -47,7 +47,13 @@ router.get("/:country/:province", async (req, res) => {
       data,
     });
   } catch (error) {
-    res.status(400).json({ error: true, message: error });
+    const statusCode = error.response.status;
+    if (statusCode === 403)
+      return res.status(statusCode).json({
+        error: true,
+        message: "You have reached the limit of requests",
+      });
+    res.status(statusCode).json({ error: true, message: error.message });
   }
 });
 
